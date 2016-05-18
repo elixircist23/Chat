@@ -35,7 +35,7 @@ public class ChatMain extends Application
 		chatrooms = new Scene(crLayout, 800, 600);
 		
 		window.setScene(chatrooms);
-	
+		window.setTitle("Shitty Chat Program");
 		window.show();
 		Login.display();
 	}
