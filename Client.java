@@ -1,21 +1,28 @@
 import java.net.*;
 import java.io.*;
+import java.util.Scanner;
 
 public class Client{
+
+	
 	
 	public static void main(String[] args){
 		
-		String serverName = "localhost";
-		int port = 1000;
-		
 		try{
+			Socket clientSocket = new Socket("localhost", 1000);
+
+			OutputStream outStream = clientSocket.getOutputStream();
+			ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
 			
-			Socket client = new Socket(serverName, port);
+			Username username = new Username("ali");
 			
-			DataOutputStream outToServer = new DataOutputStream(client.getOutputStream());
-			outToServer.writeBytes("Hello from client");
+			objectStream.writeObject(username);
 			
-			client.close();
+			clientSocket.close();
+			outStream.close();
+			objectStream.close();
+			
+			
 			
 		}catch(IOException e){
 			e.printStackTrace();
