@@ -2,36 +2,51 @@ import javafx.stage.*;
 import javafx.scene.*;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
+import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.geometry.*;
 
-public class Login 
+public class Login extends Application
 {
 	private static Stage window;
 	
 	private static Button loginButton;
+	private static TextField username;
+	private static TextField password;
 	
 	private static Label loginLabel;
 	
 	private static Scene scene;
 	
-	private static StackPane loginLayout;
+	private static VBox loginLayout;
 	
-	public static void display()
+	public static void main(String[] args)
 	{
-		window = new Stage();
-		window.initModality(Modality.APPLICATION_MODAL);
-		
+		launch(args);
+	}
+	
+	public void start(Stage primaryStage) throws Exception 
+	{
+		window = primaryStage;
+		window.setMaxWidth(200);
+		window.setMaxHeight(300);
+				
 		loginLabel = new Label("Login to use our shitty chat");
 		//loginLabel.setAlignment(Pos.TOP_CENTER);
+		
+		username = new TextField("Username");
+		password = new TextField("Password");
 		
 		loginButton = new Button("Login");
 		loginButton.setOnAction(e -> login());
 		
-		loginLayout = new StackPane();
+		loginLayout = new VBox();
 		loginLayout.getChildren().add(loginLabel);
+		loginLayout.getChildren().addAll(username, password);
 		loginLayout.getChildren().add(loginButton);
-		loginLayout.setAlignment(loginLabel, Pos.TOP_CENTER);
-		loginLayout.setAlignment(loginButton,Pos.BOTTOM_CENTER);
+		
+		
+		
 		
 		scene = new Scene(loginLayout, 200, 300);
 		
@@ -42,8 +57,14 @@ public class Login
 	
 	public static void login()
 	{
-		System.out.println("Logged in");
+		System.out.println(username.getText() + " " + password.getText());
+		ChatMain.display();
 		window.close();
+	}
+	
+	public void consumeEvent(WindowEvent event)
+	{
+		event.consume();
 	}
 	
 }
