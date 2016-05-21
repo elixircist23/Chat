@@ -1,10 +1,13 @@
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
 
 //SERVER KEEPS LIST OF THREADS, ID'S THEM AND IF CLIENT QUITS, IT SENDS QUIT OBJECT
 //AND SERVER ERASES IT FROM LIST.
 
 public class Server{
+	
+	ArrayList<Thread> clients = new ArrayList<Thread>();
 	
 	public static void main(String[] args) throws Exception{
 		int port = 1500;
@@ -42,6 +45,10 @@ public class Server{
 				clientSocket = server.accept();
 				ClientWorker clientThread = new ClientWorker(clientSocket, this);
 				clientThread.run();
+				clients.add(clientThread);
+				for(int i = 0; i < clients.size() ; i++){
+					System.out.println(clients.get(i));
+				}
 				
 			}catch(IOException e){
 				e.printStackTrace();
@@ -56,8 +63,8 @@ class ClientWorker extends Thread{
 	Socket clientSocket;
 	InputStream in = null;
 	ObjectInputStream objectInStream = null;
-	//OutputStream out = null;
-	//ObjectOutputStream objectOutStream = null;
+	OutputStream out = null;
+	ObjectOutputStream objectOutStream = null;
 	
 	
 	public ClientWorker(Socket clientSocket, Server server){
@@ -68,9 +75,7 @@ class ClientWorker extends Thread{
 		
 		try{
 			in = clientSocket.getInputStream();
-			objectInStream = new ObjectInputStream(in);
-			//out = clientSocket.getOutputStream();
-			//objectOutStream = new ObjectOutputStream(out);
+			out = clientSocket.getOutputStream();
 			
 			System.out.println("Created Streams");
 			
@@ -86,18 +91,29 @@ class ClientWorker extends Thread{
 			boolean serverStop = false;
 			
 			while(true){
-				Object o = objectInStream.readObject();
+				
+				
+				System.out.println("in server loop");
+	
+				objectInStream = new ObjectInputStream(in);
+				Object o = objectInStream.readObject();	
 				System.out.println(o.getClass().getName());
-
+				
 				if(o.getClass().getName().equals("Quit")){
 					break;
 				}
 				
+				objectOutStream = new ObjectOutputStream(out);
+				Username u = new Username("eli");
+				objectOutStream.writeObject(u);
+				
 			}
 			
 			System.out.println("Connection ended");
+			in.close();
 			objectInStream.close();
-			//out.close();
+			out.close();
+			objectOutStream.close();
 			clientSocket.close();
 			
 			if(serverStop) server.stopServer();
