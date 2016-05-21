@@ -1,8 +1,5 @@
 import java.net.*;
 import java.io.*;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 //SERVER KEEPS LIST OF THREADS, ID'S THEM AND IF CLIENT QUITS, IT SENDS QUIT OBJECT
 //AND SERVER ERASES IT FROM LIST.
@@ -48,13 +45,19 @@ public class Server{
 			}
 		}
 	}
+	
+	public static String getClassName(Object o){
+		return(o.getClass().getName().toString());
+	}
 }
 
 class ClientWorker extends Thread{
 	Server server;
 	Socket clientSocket;
-	BufferedReader in = null;
-	PrintStream out = null;
+	InputStream in = null;
+	ObjectInputStream objectInStream = null;
+	OutputStream out = null;
+	ObjectOutputStream objectOutStream = null;
 	
 	public ClientWorker(Socket clientSocket, Server server){
 		this.clientSocket = clientSocket;
@@ -63,8 +66,13 @@ class ClientWorker extends Thread{
 		System.out.println("Connected to address: " + clientSocket.getInetAddress().getHostAddress());
 		
 		try{
-			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			out = new PrintStream(clientSocket.getOutputStream());
+			in = clientSocket.getInputStream();
+			objectInStream = new ObjectInputStream(in);
+			out = clientSocket.getOutputStream();
+			objectOutStream = new ObjectOutputStream(out);
+			
+			System.out.println(in.getClass().getName());
+			
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -77,17 +85,20 @@ class ClientWorker extends Thread{
 			boolean serverStop = false;
 			
 			while(true){
-				line = in.readLine();
-				System.out.println("Client: " + line);
-				int n = Integer.parseInt(line);
+				Object o = objectInStream.readObject();
+				String objectName = Server.getClassName(o);
+				objectOutStream.writeObject(new LoginObject("ali"));
 				
-				if(n == -1){
+				if(objectName.equals("Quit")){
 					serverStop = true;
 					break;
 				}
 				
-				if(n == 0) break;
-				out.println("" + n*n);
+				else{
+					System.out.println(objectName);
+				}
+				
+				
 			}
 			
 			System.out.println("Connected ended");
@@ -96,7 +107,7 @@ class ClientWorker extends Thread{
 			clientSocket.close();
 			
 			if(serverStop) server.stopServer();
-		}catch(IOException e){
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
