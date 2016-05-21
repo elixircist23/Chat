@@ -9,42 +9,43 @@ public class Client{
 		int port = 1500;
 		
 		Socket clientSocket = null;
-		DataOutputStream out = null;
-		BufferedReader in = null;
+		InputStream in = null;
+		ObjectInputStream objectInStream = null;
+		OutputStream out = null;
+		ObjectOutputStream objectOutStream = null;
 		
 		try{
 			clientSocket = new Socket(hostname, port);
-			out = new DataOutputStream(clientSocket.getOutputStream());
-			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			in = clientSocket.getInputStream();
+			objectInStream = new ObjectInputStream(in);
+			out = clientSocket.getOutputStream();
+			objectOutStream = new ObjectOutputStream(out);
+			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
-		if(clientSocket == null || out == null || in == null){
-			System.err.println("Error: null value in socket, in, or out stream");
+		if(objectInStream == null){
+			System.out.println("error");
 			return;
 		}
 		
 		try{
 			while(true){
-				System.out.println("Enter integer data, 0 to stop connection, -1 to stop server");
 				
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-				String input = br.readLine();
+				System.out.println("hello");
+				LoginObject login = new LoginObject("ali");
+				objectOutStream.writeObject(login);
 				
-				out.writeBytes(input + "\n");
+				Quit q = new Quit();
+				objectOutStream.writeObject(q);
 				
-				int n = Integer.parseInt(input);
-				if(n == 0 || n == -1){
-					break;
-				}
+				break;
 				
-				String responseLine = in.readLine();
-				System.out.println("From Server: " + responseLine);
 			}
 			
-			out.close();
-			in.close();
+			objectOutStream.close();
+			objectInStream.close();
 			clientSocket.close();
 			
 		}catch(Exception e){
