@@ -10,6 +10,8 @@ public class Server{
 		int port = 1500;
 		Server serverSocket = new Server(port);
 		serverSocket.StartServer();
+		
+		System.out.println("Listening on port " + port);
 	}
 	
 	ServerSocket server = null;
@@ -32,10 +34,11 @@ public class Server{
 			e.printStackTrace();
 		}
 		
-		System.out.println("Waiting for connection");
+		System.out.println("Server Started\nWaiting for connection...");
 		
 		while(true){
 			try{
+				System.out.println("Waiting to make client thread...");
 				clientSocket = server.accept();
 				ClientWorker clientThread = new ClientWorker(clientSocket, this);
 				clientThread.run();
@@ -45,19 +48,17 @@ public class Server{
 			}
 		}
 	}
-	
-	public static String getClassName(Object o){
-		return(o.getClass().getName().toString());
-	}
 }
 
 class ClientWorker extends Thread{
+	
 	Server server;
 	Socket clientSocket;
 	InputStream in = null;
 	ObjectInputStream objectInStream = null;
-	OutputStream out = null;
-	ObjectOutputStream objectOutStream = null;
+	//OutputStream out = null;
+	//ObjectOutputStream objectOutStream = null;
+	
 	
 	public ClientWorker(Socket clientSocket, Server server){
 		this.clientSocket = clientSocket;
@@ -68,10 +69,10 @@ class ClientWorker extends Thread{
 		try{
 			in = clientSocket.getInputStream();
 			objectInStream = new ObjectInputStream(in);
-			out = clientSocket.getOutputStream();
-			objectOutStream = new ObjectOutputStream(out);
+			//out = clientSocket.getOutputStream();
+			//objectOutStream = new ObjectOutputStream(out);
 			
-			System.out.println(in.getClass().getName());
+			System.out.println("Created Streams");
 			
 		}catch(IOException e){
 			e.printStackTrace();
@@ -79,31 +80,24 @@ class ClientWorker extends Thread{
 	}
 	
 	public void run(){
-		String line;
-		
+		System.out.println("Running Thread");
+				
 		try{
 			boolean serverStop = false;
 			
 			while(true){
 				Object o = objectInStream.readObject();
-				String objectName = Server.getClassName(o);
-				objectOutStream.writeObject(new LoginObject("ali"));
-				
-				if(objectName.equals("Quit")){
-					serverStop = true;
+				System.out.println(o.getClass().getName());
+
+				if(o.getClass().getName().equals("Quit")){
 					break;
 				}
 				
-				else{
-					System.out.println(objectName);
-				}
-				
-				
 			}
 			
-			System.out.println("Connected ended");
-			in.close();
-			out.close();
+			System.out.println("Connection ended");
+			objectInStream.close();
+			//out.close();
 			clientSocket.close();
 			
 			if(serverStop) server.stopServer();
@@ -111,5 +105,10 @@ class ClientWorker extends Thread{
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public static String getClassName(Object o){
+		System.out.println("Getting object name");
+		return(o.getClass().getName().toString());
 	}
 }
