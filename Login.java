@@ -9,6 +9,7 @@ import javafx.geometry.*;
 public class Login extends Application
 {
 	private static Stage window;
+	private static Stage temp;
 	
 	private static Button loginButton;
 	private static TextField username;
@@ -28,6 +29,7 @@ public class Login extends Application
 	public void start(Stage primaryStage) throws Exception 
 	{
 		window = primaryStage;
+		temp = primaryStage;
 		window.setMaxWidth(200);
 		window.setMaxHeight(300);
 				
@@ -57,8 +59,15 @@ public class Login extends Application
 	
 	public static void login()
 	{
-		System.out.println(username.getText() + " " + password.getText());
-		ChatMain.display();
+		System.out.println(new LoginObject(username.getText()));
+		ChatMain cm = new ChatMain();
+		
+		try {
+			cm.start(temp);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		window.close();
 	}
 	
