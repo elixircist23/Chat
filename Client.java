@@ -9,15 +9,15 @@ public class Client{
 		int port = 1500;
 		
 		Socket clientSocket = null;
-		InputStream in = null;
-		ObjectInputStream objectInStream = null;
+		//InputStream in = null;
+		//ObjectInputStream objectInStream = null;
 		OutputStream out = null;
 		ObjectOutputStream objectOutStream = null;
 		
 		try{
 			clientSocket = new Socket(hostname, port);
-			in = clientSocket.getInputStream();
-			objectInStream = new ObjectInputStream(in);
+			//in = clientSocket.getInputStream();
+			//objectInStream = new ObjectInputStream(in);
 			out = clientSocket.getOutputStream();
 			objectOutStream = new ObjectOutputStream(out);
 			
@@ -25,10 +25,10 @@ public class Client{
 			e.printStackTrace();
 		}
 		
-		if(objectInStream == null){
-			System.out.println("error");
-			return;
-		}
+		//if(objectInStream == null){
+			//System.out.println("error");
+			//return;
+		//}
 		
 		try{
 			while(true){
@@ -45,7 +45,7 @@ public class Client{
 			}
 			
 			objectOutStream.close();
-			objectInStream.close();
+			//objectInStream.close();
 			clientSocket.close();
 			
 		}catch(Exception e){
