@@ -16,20 +16,25 @@ public class ChatClient implements Runnable{
 		
 		try{
 			
+			//creating socket/object streams
 			clientSocket = new Socket("localhost", 1500);
 			out = new PrintStream(clientSocket.getOutputStream());
 			oos = new ObjectOutputStream(out);
 			in = new DataInputStream(clientSocket.getInputStream());
 			ois = new ObjectInputStream(in);
 			
+			System.out.println("Created Streams");
+			
 		}catch(Exception e){e.printStackTrace();}
 		
 		System.out.println("Connected to host");
 		
-		if(clientSocket != null && out != null){
+		//if everything connected successfully move on
+		if(clientSocket != null && out != null && in != null){
 			
 			try{
 				
+				//create and start a new ChatClient thread to 
 				new Thread(new ChatClient()).start();
 				
 				while(!closed){
