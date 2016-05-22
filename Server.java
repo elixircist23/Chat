@@ -37,7 +37,7 @@ public class Server{
 			e.printStackTrace();
 		}
 		
-		System.out.println("Server Started\nWaiting for connection...");
+		System.out.println("Server Started, Waiting for connection...");
 		
 		while(true){
 			try{
@@ -46,8 +46,12 @@ public class Server{
 				ClientWorker clientThread = new ClientWorker(clientSocket, this);
 				clientThread.run();
 				clients.add(clientThread);
+				
 				for(int i = 0; i < clients.size() ; i++){
 					System.out.println(clients.get(i));
+				}
+				for(int i = 0; i < clients.size(); i++){
+					clients.get(i).start();
 				}
 				
 			}catch(IOException e){
@@ -90,41 +94,41 @@ class ClientWorker extends Thread{
 		try{
 			boolean serverStop = false;
 			
-			while(true){
-				
-				
-				System.out.println("in server loop");
-	
+			//while(true){
+					
 				objectInStream = new ObjectInputStream(in);
 				Object o = objectInStream.readObject();	
-				System.out.println(o.getClass().getName());
-				
+								
 				if(o.getClass().getName().equals("Quit")){
-					break;
+					System.out.println("you sent quit");
+					objectInStream.close();
+					objectOutStream.close();
+					in.close();
+					out.close();
+					
 				}
 				
-				objectOutStream = new ObjectOutputStream(out);
-				Username u = new Username("eli");
-				objectOutStream.writeObject(u);
+				//objectOutStream = new ObjectOutputStream(out);
+				//Username u = new Username("eli");
+				//objectOutStream.writeObject(u);
 				
-			}
+			//}
 			
-			System.out.println("Connection ended");
-			in.close();
-			objectInStream.close();
-			out.close();
-			objectOutStream.close();
-			clientSocket.close();
+			//System.out.println("Connection ended");
+			//in.close();
+			//objectInStream.close();
+			//out.close();
+			//objectOutStream.close();
+			//clientSocket.close();
 			
-			if(serverStop) server.stopServer();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
 	}
 	
-	public static String getClassName(Object o){
+	public String getClassName(){
 		System.out.println("Getting object name");
-		return(o.getClass().getName().toString());
+		return(this.getClass().getName().toString());
 	}
 }
