@@ -38,7 +38,10 @@ public class ChatServer {
 class ClientThread extends Thread{
 	
 	public Socket clientSocket = null;
-	public BufferedReader in = null;
+	public DataInputStream in = null;
+	public DataOutputStream out = null;
+	public ObjectInputStream ois = null;
+	public ObjectOutputStream oos = null;
 	
 	public ClientThread(Socket clientSocket){
 		this.clientSocket = clientSocket;
@@ -50,20 +53,33 @@ class ClientThread extends Thread{
 		
 		try{
 		
-			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-						
+			in = new DataInputStream(clientSocket.getInputStream());	
+			ois = new ObjectInputStream(in);
+			out = new DataOutputStream(clientSocket.getOutputStream());
+			oos = new ObjectOutputStream(out);
+			
+			
 			while(true){
 				
-				String input = in.readLine();
-				System.out.println("CLIENT: " + input);
+				Object input = ois.readObject();
 				
-				if(input.equals("quit")){
+				if(input.getClass().getName().equals("TempMessage")){
+					TempMessage msg = (TempMessage) input;
+					System.out.println("CLIENT: " + msg.getMessage());
+				}
+								
+				if(input.getClass().getName().equals(("Quit"))){
 					break;
 				}
+				
+				oos.writeObject(new TempMessage("hello"));
 				
 			}
 			
 			in.close();
+			ois.close();
+			out.close();
+			oos.close();
 			clientSocket.close();
 		
 		}catch(Exception e){e.printStackTrace();}
