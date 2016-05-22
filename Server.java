@@ -2,133 +2,111 @@ import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 
-//SERVER KEEPS LIST OF THREADS, ID'S THEM AND IF CLIENT QUITS, IT SENDS QUIT OBJECT
-//AND SERVER ERASES IT FROM LIST.
 
 public class Server{
 	
-	ArrayList<Thread> clients = new ArrayList<Thread>();
+	private static ArrayList<ClientWorker> clients = new ArrayList<ClientWorker>();
+	private static ServerSocket serverSocket = null;
+	private static Socket clientSocket = null;
 	
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args){
 		int port = 1500;
-		Server serverSocket = new Server(port);
-		serverSocket.StartServer();
 		
-		System.out.println("Listening on port " + port);
-	}
-	
-	ServerSocket server = null;
-	Socket clientSocket = null;
-	int port;
-	
-	public Server(int port){
-		this.port = port;
-	}
-	
-	public void stopServer(){
-		System.out.println("Server shutting down");
-		System.exit(0);
-	}
-	
-	public void StartServer(){
 		try{
-			server = new ServerSocket(port);
+			serverSocket = new ServerSocket(port);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
 		
-		System.out.println("Server Started, Waiting for connection...");
+		System.out.println("Server socket created");
 		
 		while(true){
 			try{
-				System.out.println("Waiting to make client thread...");
-				clientSocket = server.accept();
-				ClientWorker clientThread = new ClientWorker(clientSocket, this);
-				clientThread.run();
-				clients.add(clientThread);
+				clientSocket = serverSocket.accept();
+				System.out.println("Connected to client: " + clientSocket.getInetAddress().getHostAddress());
 				
-				for(int i = 0; i < clients.size() ; i++){
-					System.out.println(clients.get(i));
-				}
-				for(int i = 0; i < clients.size(); i++){
-					clients.get(i).start();
+				for(int i = 0; i < clients.size() + 1; i++){
+					ClientWorker clientThread = new ClientWorker(clientSocket, clients);
+					clientThread.start();
+					System.out.println("Started client thread");
+					clients.add(clientThread);
+					break;
 				}
 				
 			}catch(IOException e){
 				e.printStackTrace();
-			}
+			}	
 		}
 	}
 }
 
 class ClientWorker extends Thread{
 	
-	Server server;
-	Socket clientSocket;
-	InputStream in = null;
-	ObjectInputStream objectInStream = null;
-	OutputStream out = null;
-	ObjectOutputStream objectOutStream = null;
+	private Socket clientSocket;
+	private ArrayList<ClientWorker> clients;
+	private InputStream in = null;
+	private ObjectInputStream objectInStream = null;
+	private OutputStream out = null;
+	private ObjectOutputStream objectOutStream = null;
 	
-	
-	public ClientWorker(Socket clientSocket, Server server){
+	public ClientWorker(Socket clientSocket, ArrayList<ClientWorker> clients){
 		this.clientSocket = clientSocket;
-		this.server = server;
+		this.clients = clients;
 		
 		System.out.println("Connected to address: " + clientSocket.getInetAddress().getHostAddress());
 		
-		try{
-			in = clientSocket.getInputStream();
-			out = clientSocket.getOutputStream();
-			
-			System.out.println("Created Streams");
-			
-		}catch(IOException e){
-			e.printStackTrace();
-		}
 	}
 	
 	public void run(){
-		System.out.println("Running Thread");
-				
-		try{
-			boolean serverStop = false;
+		
+		ArrayList<ClientWorker> clients = this.clients;
+		
+		for(int i = 0; i < clients.size(); i++){
+			System.out.println(clients.get(i));
+		}
+		
+		try{			
 			
-			//while(true){
-					
-				objectInStream = new ObjectInputStream(in);
-				Object o = objectInStream.readObject();	
-								
-				if(o.getClass().getName().equals("Quit")){
-					System.out.println("you sent quit");
-					objectInStream.close();
-					objectOutStream.close();
-					in.close();
-					out.close();
-					
+			in = clientSocket.getInputStream();
+			out = clientSocket.getOutputStream();
+			objectInStream = new ObjectInputStream(in);
+			objectOutStream = new ObjectOutputStream(out);
+			
+			objectOutStream.writeObject(new TempMessage("hello from server"));
+			String type = objectInStream.readObject().getClass().getName();
+			System.out.println(type);
+			
+			while(true){
+				String line = objectInStream.readObject().getClass().getName();
+				if(line.equals("Quit")){
+					break;
 				}
 				
-				//objectOutStream = new ObjectOutputStream(out);
-				//Username u = new Username("eli");
-				//objectOutStream.writeObject(u);
-				
-			//}
+				for(int i = 0; i < clients.size(); i++){
+					clients.get(i).objectOutStream.writeObject(new TempMessage("ok"));
+				}
+			}
 			
-			//System.out.println("Connection ended");
-			//in.close();
-			//objectInStream.close();
-			//out.close();
-			//objectOutStream.close();
-			//clientSocket.close();
+			for(int i = 0; i < clients.size(); i++){
+				clients.get(i).objectOutStream.writeObject(new TempMessage("bye"));
+			}
+			
+			objectOutStream.writeObject(new TempMessage("bye #2"));
+			
+			for(int i = 0; i < clients.size(); i++){
+				if(clients.get(i) == this){
+					clients.remove(i);
+				}
+			}
+			
+			out.close();
+			in.close();
+			objectInStream.close();
+			objectOutStream.close();
 			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
-	}
-	
-	public String getClassName(){
-		System.out.println("Getting object name");
-		return(this.getClass().getName().toString());
 	}
 }
