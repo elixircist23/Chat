@@ -5,7 +5,8 @@ import java.util.Scanner;
 public class Client{
 	public static void main(String[] args){
 		
-		String hostname = "localhost";
+		String hostname = "192.168.1.7";
+		//String hostname = "localhost";
 		int port = 1500;
 		
 		Socket clientSocket = null;
@@ -56,11 +57,11 @@ public class Client{
 				
 			}
 			
-			in.close();
-			out.close();
-			objectInStream.close();
-			objectOutStream.close();
-			clientSocket.close();
+			//in.close();
+			//out.close();
+			//objectInStream.close();
+			//objectOutStream.close();
+			//clientSocket.close();
 			
 		}catch(Exception e){
 			e.printStackTrace();
