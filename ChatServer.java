@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class ChatServer {
 
-	//public static ArrayList<ClientThread> threads = new ArrayList<ClientThreads>();
+	public static ArrayList<ClientThread> threads = new ArrayList<ClientThread>();
 	public static ServerSocket serverSocket = null;
 	public static Socket clientSocket = null;
 	
@@ -26,9 +26,9 @@ public class ChatServer {
 			
 			System.out.println("Accepted socket");
 			
-			ClientThread thread = new ClientThread(clientSocket);
+			ClientThread thread = new ClientThread(clientSocket, threads);
 			thread.start();
-			
+			threads.add(thread);
 		}
 		
 	}
@@ -38,18 +38,22 @@ public class ChatServer {
 class ClientThread extends Thread{
 	
 	public Socket clientSocket = null;
+	public ArrayList<ClientThread> threads = null;
 	public DataInputStream in = null;
 	public DataOutputStream out = null;
 	public ObjectInputStream ois = null;
 	public ObjectOutputStream oos = null;
 	
-	public ClientThread(Socket clientSocket){
+	public ClientThread(Socket clientSocket, ArrayList<ClientThread> threads){
 		this.clientSocket = clientSocket;
+		this.threads = threads;
 	}
 	
 	public void run(){
 		
 		System.out.println("Running thread");
+		
+		ArrayList<ClientThread> threads = this.threads;
 		
 		try{
 		
@@ -72,7 +76,11 @@ class ClientThread extends Thread{
 					break;
 				}
 				
-				oos.writeObject(new TempMessage("hello"));
+				for(int i = 0; i < threads.size(); i++){
+					
+					threads.get(i).oos.writeObject(input);
+					
+				}
 				
 			}
 			
