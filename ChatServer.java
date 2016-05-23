@@ -18,6 +18,7 @@ public class ChatServer {
 	
 		System.out.println("Waiting for connection...");
 		
+		//always accepting new client connections
 		while(true){
 			
 			try{
@@ -26,6 +27,7 @@ public class ChatServer {
 			
 			System.out.println("Accepted socket");
 			
+			//create new client thread, start the thread, and add it to the threads list
 			ClientThread thread = new ClientThread(clientSocket, threads);
 			thread.start();
 			threads.add(thread);
@@ -35,6 +37,7 @@ public class ChatServer {
 	
 }
 
+//this class creates a thread to read THEN write to clients
 class ClientThread extends Thread{
 	
 	public Socket clientSocket = null;
@@ -65,6 +68,8 @@ class ClientThread extends Thread{
 			
 			while(true){
 				
+				//USE TO READ STUFF
+				
 				Object input = ois.readObject();
 				
 				if(input.getClass().getName().equals("TempMessage")){
@@ -75,6 +80,8 @@ class ClientThread extends Thread{
 				if(input.getClass().getName().equals(("Quit"))){
 					break;
 				}
+				
+				//USE TO WRITE STUFF
 				
 				for(int i = 0; i < threads.size(); i++){
 					
