@@ -1,3 +1,5 @@
+package application;
+
 import java.io.Serializable;
 
 public class LoginObject implements Serializable
@@ -7,10 +9,9 @@ public class LoginObject implements Serializable
 
 	private static final long serialVersionUID = 1L;
 	
-	public LoginObject(String usr, String pass)
+	public LoginObject(String usr)
 	{
 		username = usr;
-		password = pass;
 	}
 	
 	public String toString()

@@ -1,3 +1,4 @@
+package application;
 import javafx.stage.*;
 import javafx.scene.*;
 import javafx.scene.layout.*;
@@ -65,7 +66,6 @@ public class Login extends Application
 		try {
 			cm.start(temp);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		window.close();
