@@ -15,7 +15,7 @@
    <bottom>
       <HBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
          <children>
-            <TextField fx:id="messageField" alignment="TOP_CENTER" prefHeight="22.0" prefWidth="299.0" promptText="Message">
+            <TextField fx:id="messageField" alignment="TOP_CENTER" onKeyPressed="#enterPressed" onKeyReleased="#enterPressed" onKeyTyped="#enterPressed" prefHeight="22.0" prefWidth="299.0" promptText="Message">
                <opaqueInsets>
                   <Insets />
                </opaqueInsets>
