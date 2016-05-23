@@ -37,8 +37,10 @@ public class Login extends Application
 		loginLabel = new Label("Login to use our shitty chat");
 		//loginLabel.setAlignment(Pos.TOP_CENTER);
 		
-		username = new TextField("Username");
-		password = new TextField("Password");
+		username = new TextField();
+		password = new TextField();
+		username.setPromptText("Username");
+		password.setPromptText("Password");
 		
 		loginButton = new Button("Login");
 		loginButton.setOnAction(e -> login());
