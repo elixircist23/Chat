@@ -1,0 +1,11 @@
+on client gui creation, connect to the server and send login object. server will be expecting a login object, and will be checking password against data base (which will be created later). if failed, server will stop thread, and send quit (maybe will create 'fail
+ object later on) to client, client will take care of the quit.
+ 
+ 
+if the login was successfull, the input will be looped on the text input of the gui. it won't be printed on the gui, rather the server will send it back to the clients main message screen which is a looped thread always accepting input. 
+
+
+maybe have an 'updateUsers' object to update the users in the chat room which come up on the left.
+
+
+the chatclient will be given a username in the constructor that will identify the thread.
