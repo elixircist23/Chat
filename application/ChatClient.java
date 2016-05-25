@@ -2,6 +2,9 @@ import java.net.*;
 import java.io.*;
 import java.util.Scanner;
 
+import java.awt.*;
+import java.awt.event.*;
+
 public class ChatClient implements Runnable{
 	
 	public static Socket clientSocket = null;
@@ -11,6 +14,7 @@ public class ChatClient implements Runnable{
 	public static ObjectInputStream ois = null;
 	public static Scanner stdin = new Scanner(System.in);
 	public static boolean closed = false;
+	
 
 	public static void main(String[] args) {
 		
@@ -83,17 +87,17 @@ public class ChatClient implements Runnable{
 						
 			//while we are getting input
 			while((responseLine = ois.readObject())!= null){
-				
 				//grab the name of the object
 				if(responseLine.getClass().getName().equals("TempMessage")){
 					TempMessage m = (TempMessage) responseLine;
-					System.out.println("CLIENT: " + m.getMessage());
-				}
+					System.out.println(m.getMessage());
+ 				}
 				
 				if(responseLine.getClass().getName().equals("Quit")){
 					break;
 				}
 			}
+			
 			
 		}catch(Exception e){e.printStackTrace();}
 		
