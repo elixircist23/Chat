@@ -1,114 +1,169 @@
-
 import java.net.*;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.Scanner;
 
-public class ChatServer {
+import java.awt.*;
+import java.awt.event.*;
 
-	public static ArrayList<ClientThread> threads = new ArrayList<ClientThread>();
-	public static ServerSocket serverSocket = null;
+public class ChatClient implements Runnable{
+	
 	public static Socket clientSocket = null;
+	public static DataOutputStream out = null;
+	public static ObjectOutputStream oos = null;
+	public static DataInputStream in = null;
+	public static ObjectInputStream ois = null;
+	public static Scanner stdin = new Scanner(System.in);
+	public static boolean closed = false;
+	public static String input = null;
 	
-	public static void main(String[] args){
+	public static Frame mainFrame;
+	public static Label msgLabel;
+	public static TextArea textArea;
+	public static TextField textField;
+	
+	public static void main(String[] args) {
+		
+		mainFrame = new Frame("Chat");
+		mainFrame.setSize(500, 300);
+		mainFrame.setLayout(new GridBagLayout());
+		mainFrame.addWindowListener((new WindowAdapter(){
+			public void windowClosing(WindowEvent windowEvent){
+				try{
+					oos.writeObject(new Quit());
+					out.close();
+					oos.close();
+					in.close();
+					ois.close();
+					clientSocket.close();
+					System.exit(0);
+				}catch(Exception e){}
+				System.exit(0);
+			}
+		}));
+		
+		Panel panel = new Panel();
+		panel.setLayout(new GridBagLayout());
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		
+		msgLabel = new Label();
+		msgLabel.setAlignment(Label.CENTER);
+		
+		textArea = new TextArea();
+		textArea.setEditable(false);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		panel.add(textArea, gbc);
+		
+		textField = new TextField();
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		panel.add(textField, gbc);
+		textField.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				input = textField.getText();
+				System.out.println(input);
+				textField.setText(" ");
+				textField.setText("");
+			}
+		});
+				
+		mainFrame.add(panel);
+		mainFrame.setVisible(true);
+		
 		
 		try{
-			serverSocket = new ServerSocket(1500);
-		}catch(Exception e){e.printStackTrace();}
-		
-		System.out.println("Server Socket Created");
-	
-		System.out.println("Waiting for connection...");
-		
-		//always accepting new client connections
-		while(true){
 			
-			try{
-				clientSocket = serverSocket.accept();
-			}catch(Exception e){e.printStackTrace();}
-			
-			System.out.println("Accepted socket");
-			
-			//create new client thread, start the thread, and add it to the threads list
-			ClientThread thread = new ClientThread(clientSocket, threads);
-			thread.start();
-			threads.add(thread);
-		}
-		
-	}
-	
-}
-
-//this class creates a thread to read THEN write to clients
-class ClientThread extends Thread{
-	
-	public Socket clientSocket = null;
-	public ArrayList<ClientThread> threads = null;
-	public DataInputStream in = null;
-	public DataOutputStream out = null;
-	public ObjectInputStream ois = null;
-	public ObjectOutputStream oos = null;
-	
-	public ClientThread(Socket clientSocket, ArrayList<ClientThread> threads){
-		this.clientSocket = clientSocket;
-		this.threads = threads;
-	}
-	
-	public void run(){
-		
-		System.out.println("Running thread");
-		
-		ArrayList<ClientThread> threads = this.threads;
-		
-		try{
-		
-			in = new DataInputStream(clientSocket.getInputStream());	
-			ois = new ObjectInputStream(in);
+			//creating socket/object streams
+			clientSocket = new Socket("DESKTOP-3DEUN25", 1500);
 			out = new DataOutputStream(clientSocket.getOutputStream());
 			oos = new ObjectOutputStream(out);
+			in = new DataInputStream(clientSocket.getInputStream());
+			ois = new ObjectInputStream(in);
 			
-			oos.writeObject(new TempMessage("What's your Username? "));
-			Object o = ois.readObject();
-			TempMessage tmp = (TempMessage) o;
-			String name = tmp.getMessage();
-			name = name + ": ";
+			System.out.println("Created Streams");
 			
-			while(true){
-				
-				//USE TO READ STUFF
-				
-				Object input = ois.readObject();
-				
-				if(input.getClass().getName().equals("TempMessage")){
-					TempMessage msg = (TempMessage) input;
-					String temp = name + msg.getMessage();
-					System.out.println(msg.getMessage());
-					input = new TempMessage(temp);
-					System.out.println(name);
-					msg = null;
-				}
-								
-				if(input.getClass().getName().equals(("Quit"))){
-					break;
-				}
-				
-				//USE TO WRITE STUFF
-				
-				for(int i = 0; i < threads.size(); i++){
-					
-					threads.get(i).oos.writeObject(input);
-					
-				}				
-				
-			}
-			
-			in.close();
-			ois.close();
-			out.close();
-			oos.close();
-			clientSocket.close();
-		
 		}catch(Exception e){e.printStackTrace();}
-	
+		
+		System.out.println("Connected to host");
+		
+		//if everything connected successfully move on
+		if(clientSocket != null && out != null && in != null){
+			
+			try{
+				
+				//create and start a new ChatClient thread to read input sent from the server
+				new Thread(new ChatClient()).start();
+				
+				//while the connection is still open...
+				//USE THIS TO WRITE STUFF
+				while(!closed){
+				
+					//accept user input through console
+					//String input = stdin.nextLine();
+					
+					//if user writes 'quit', create a quit object and send it to the server,
+						//closed is now true, and break from the while loop
+					System.out.println(input);
+					if(input != null){
+						System.out.println("HEREEHERHEHRHERH: " + input);
+						if(input.equals("quit")){
+							System.out.println("Closing connections...");
+							Quit q = new Quit();
+							oos.writeObject(q);
+							closed = true;
+							break;
+						}
+						else{
+							TempMessage msg = new TempMessage(input);
+							oos.writeObject(msg);
+						}
+							input = null;		
+					}
+				}
+				
+				//cleaning up connections
+				out.close();
+				oos.close();
+				in.close();
+				ois.close();
+				clientSocket.close();
+				System.exit(0);
+			
+			}catch(Exception e){e.printStackTrace();}
+			
+		}
+				
 	}
 	
+	//the run method for the thread USE THIS FOR READING STUFF
+	public void run(){
+		
+		Object responseLine;
+		
+		try{
+						
+			//while we are getting input
+			while((responseLine = ois.readObject())!= null){
+				//grab the name of the object
+				if(responseLine.getClass().getName().equals("TempMessage")){
+					
+					TempMessage m = (TempMessage) responseLine;
+					System.out.println(m.getMessage());
+					textArea.append(m.getMessage() + "\n");
+					
+ 				}
+				
+				if(responseLine.getClass().getName().equals("Quit")){
+					break;
+				}
+			}
+			
+			
+		}catch(Exception e){e.printStackTrace();}
+		
+	}
+
 }
